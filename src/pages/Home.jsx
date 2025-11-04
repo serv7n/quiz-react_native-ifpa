@@ -1,15 +1,37 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, Alert, StyleSheet } from "react-native";
 import { Eye, EyeOff, User, Play } from "lucide-react-native";
 import Api from "../services/Api";
-import Nav from '../components/Nav'
+import Nav from '../components/Nav';
+
+/* 🔍 Função global: verifica se já existe usuário salvo */
+async function checkUserSession(navigation) {
+    try {
+        const savedUser = await AsyncStorage.getItem('user');
+        if (savedUser) {
+            const parsedUser = JSON.parse(savedUser);
+            console.log("Usuário já logado:", parsedUser);
+            navigation.reset({
+                index: 0,
+                routes: [{ name: "TurmasSelection" }],
+            });
+        }
+    } catch (error) {
+        console.error("Erro ao verificar sessão:", error);
+    }
+}
 
 export default function Home({ navigation }) {
     const [user, setUser] = useState("");
     const [senha, setSenha] = useState("");
     const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+
+    // 🔁 Verifica sessão automaticamente ao abrir o app
+    useEffect(() => {
+        checkUserSession(navigation);
+    }, []);
 
     async function onClickBtn() {
         if (!user.trim() || !senha.trim()) {
@@ -21,14 +43,15 @@ export default function Home({ navigation }) {
 
         try {
             const response = await Api.login(user, senha);
-            console.log(response)
+            console.log(response);
             if (response.status_code === 200 && response.messege === "success") {
                 const aluno = response.data;
-                // Armazena o aluno localmente (AsyncStorage no RN)
+
+                // Salva dados localmente
                 await AsyncStorage.setItem('user', JSON.stringify(aluno));
 
                 Alert.alert(`Bem-vindo, ${aluno.user}!`);
-                navigation.navigate("Questions"); // vai para a tela de quiz
+                navigation.navigate("Turma");
             } else {
                 Alert.alert(response.message || "Usuário ou senha inválidos.");
             }
@@ -43,7 +66,7 @@ export default function Home({ navigation }) {
     return (
         <View style={styles.container}>
             {/* Cabeçalho */}
-            <Nav/>
+            <Nav />
 
             {/* Boas-vindas */}
             <View style={styles.welcome}>
@@ -102,6 +125,12 @@ export default function Home({ navigation }) {
                         </View>
                     )}
                 </TouchableOpacity>
+                
+                <TouchableOpacity onPress={() => navigation.navigate("Register")}>
+                    <Text style={{ textAlign: "center", color: "#1E3A8A", marginTop: 10 }}>
+                        Ainda não tem conta? <Text style={{ fontWeight: "bold" }}>Cadastrar</Text>
+                    </Text>
+                </TouchableOpacity>
             </View>
         </View>
     );
@@ -112,16 +141,7 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: "#DBEAFE",
-    },
-    nav: {
-        backgroundColor: "#1E3A8A",
-        padding: 16,
-        alignItems: "center",
-    },
-    navTitle: {
-        color: "#fff",
-        fontSize: 20,
-        fontWeight: "bold",
+        paddingTop: 0,
     },
     welcome: {
         alignItems: "center",
@@ -184,11 +204,4 @@ const styles = StyleSheet.create({
         fontWeight: "bold",
         fontSize: 18,
     },
-    container: {
-        flex: 1,
-        backgroundColor: "#DBEAFE",
-        paddingTop: 35, 
-    }
-
-    
 });
