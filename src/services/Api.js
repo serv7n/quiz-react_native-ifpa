@@ -3,7 +3,7 @@ import axios from "axios";
 class Api {
     constructor() {
         this.client = axios.create({
-            baseURL: "http://localhost:8000/api", // ✅ ajustado conforme pedido
+            baseURL: "http://192.168.1.4:8000/api", // ✅ ajustado conforme pedido
             headers: {
                 "Content-Type": "application/json",
                 Accept: "application/json",
@@ -77,52 +77,14 @@ class Api {
         }
     }
 
+
     async questoesUsuario(id) {
-        try {
+     
             const response = await this.client.get(`/questoes/usuario/${id}`);
-            const data = response.data;
-
-            if (data?.status_code !== 200 || !data?.data?.questoes) {
-                return { status_code: 404, message: "Nenhuma questão encontrada" };
-            }
-
-            // 🔄 Converter formato das questões da API para o formato local
-            const questoesConvertidas = {};
-            data.data.questoes.forEach((q, index) => {
-                const corretaNum = parseInt(q.altCorreta.replace("alt", ""));
-                questoesConvertidas[index + 1] = {
-                    id: q.id,
-                    title: q.title,
-                    alternativas: {
-                        1: q.alt1,
-                        2: q.alt2,
-                        3: q.alt3,
-                        4: q.alt4,
-                    },
-                    correta: corretaNum,
-                    timing: q.timing || 10,
-                    turma_id: q.turma_id ?? null,
-                };
-            });
-
-            // 🕒 Capturar o campo "comecar" ou "comecou" (dependendo do backend)
-            const comecar = data.data.comecar ?? data.data.comecou ?? null;
-
-            return {
-                status_code: 200,
-                message: "success",
-                comecar,
-                questoes: questoesConvertidas,
-            };
-        } catch (error) {
-            console.error("Erro ao buscar questões do usuário:", error.response?.data || error.message);
-            return (
-                error.response?.data || {
-                    status_code: 500,
-                    message: "Erro ao carregar questões",
-                }
-            );
-        }
+        const data = response.data; // Aqui você já tem o objeto completo
+      
+        return data;
+           
     }
 
 }

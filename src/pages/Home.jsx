@@ -51,7 +51,7 @@ export default function Home({ navigation }) {
                 await AsyncStorage.setItem('user', JSON.stringify(aluno));
 
                 Alert.alert(`Bem-vindo, ${aluno.user}!`);
-                navigation.navigate("Turma");
+                navigation.navigate("TurmasSelection");
             } else {
                 Alert.alert(response.message || "Usuário ou senha inválidos.");
             }

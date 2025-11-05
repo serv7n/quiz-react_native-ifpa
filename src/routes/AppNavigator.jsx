@@ -17,8 +17,8 @@ export default function AppNavigator() {
             <Stack.Navigator screenOptions={{
                 headerShown: false, // 👈 remove o cabeçalho de TODAS as telas
             }}>
-                <Stack.Screen name="Register" component={Register} /> 
                 <Stack.Screen name="Home" component={Home} />
+                <Stack.Screen name="Register" component={Register} /> 
                 <Stack.Screen name="TurmasSelection" component={TurmasSelection} />
                 <Stack.Screen name="Test" component={Test} />
                 <Stack.Screen name="Questions" component={QuestionsPage} />
