@@ -20,21 +20,46 @@ export default function QuestionsPage() {
     const [respostas, setRespostas] = useState({});
     const [respostasCertas, setRespostasCertas] = useState({});
     const [comecou, setComecou] = useState(false);
+    const [usuarioId, setUsuarioId] = useState(null);
     const timerRef = useRef(null);
     const pollingRef = useRef(null);
     const navigation = useNavigation();
 
-    // 🔹 Usar refs para manter valores atualizados entre renderizações
     const respostasRef = useRef({});
     const respostasCertasRef = useRef({});
 
-    // 🔹 Busca as questões periodicamente até o quiz começar
+    // 🔹 Carrega o ID do usuário salvo localmente
     useEffect(() => {
+        const carregarUsuario = async () => {
+            try {
+                const userData = await AsyncStorage.getItem("user"); // ou a chave que você usa
+                if (!userData) {
+                    Alert.alert("Erro", "Usuário não encontrado. Faça login novamente.");
+                    navigation.navigate("Login");
+                    return;
+                }
+
+                const user = JSON.parse(userData);
+                setUsuarioId(user.id);
+            } catch (error) {
+                console.error("Erro ao carregar usuário:", error);
+                Alert.alert("Erro", "Não foi possível carregar o usuário.");
+            }
+        };
+
+        carregarUsuario();
+    }, []);
+
+    // 🔹 Busca as questões quando o usuário foi carregado
+    useEffect(() => {
+        if (!usuarioId) return;
+
         let ativo = true;
 
         const carregarQuestoes = async () => {
             try {
-                const response = await Api.questoesUsuario(1); // id do aluno (ajuste se necessário)
+                const response = await Api.questoesUsuario(usuarioId);
+
                 if (response.messege === "success") {
                     const questoesData = Array.isArray(response.data)
                         ? response.data
@@ -46,9 +71,6 @@ export default function QuestionsPage() {
                         setComecou(true);
                         setTempoRestante(questoesData[0]?.timing || 0);
                         clearInterval(pollingRef.current);
-
-                        console.log("📋 Total de questões:", questoesData.length);
-                        console.log("✅ Primeira questão:", questoesData[0]);
                     }
                 }
             } catch (err) {
@@ -65,7 +87,7 @@ export default function QuestionsPage() {
             ativo = false;
             clearInterval(pollingRef.current);
         };
-    }, []);
+    }, [usuarioId]);
 
     // 🔹 Controla o cronômetro do quiz
     useEffect(() => {
@@ -101,32 +123,20 @@ export default function QuestionsPage() {
         const questaoAtual = questoes[indiceAtual];
         const idQuestao = questaoAtual.id;
 
-        console.log("🔍 DEBUG - Questão:", questaoAtual.title);
-        console.log("🔍 Alternativa selecionada:", alternativa);
-        console.log("🔍 Resposta correta da API:", questaoAtual.altCorreta ?? questaoAtual.certa);
-        console.log("🔍 Tipo da resposta correta:", typeof (questaoAtual.altCorreta ?? questaoAtual.certa));
-
-        // 🔹 Atualiza os objetos de respostas
         const novasRespostas = {
             ...respostasRef.current,
             [idQuestao]: alternativa,
         };
         const novasRespostasCertas = { ...respostasCertasRef.current };
 
-        // ✅ Normaliza e compara resposta
         const respostaCorretaNormalizada = String(
             questaoAtual.altCorreta ?? questaoAtual.certa
         ).toLowerCase().trim();
 
         const alternativaNormalizada = String(alternativa).toLowerCase().trim();
 
-        console.log("🔍 Comparando:", alternativaNormalizada, "===", respostaCorretaNormalizada);
-
         if (alternativaNormalizada === respostaCorretaNormalizada) {
             novasRespostasCertas[idQuestao] = true;
-            console.log("✅ RESPOSTA CORRETA!");
-        } else {
-            console.log("❌ RESPOSTA ERRADA");
         }
 
         respostasRef.current = novasRespostas;
@@ -134,8 +144,6 @@ export default function QuestionsPage() {
 
         setRespostas(novasRespostas);
         setRespostasCertas(novasRespostasCertas);
-
-        console.log("📊 Respostas certas até agora:", Object.keys(novasRespostasCertas).length);
 
         if (indiceAtual === questoes.length - 1) {
             finalizarQuiz(novasRespostas, novasRespostasCertas);
@@ -153,11 +161,6 @@ export default function QuestionsPage() {
         const totalCorretas = Object.keys(certasFinais).length;
         const totalQuestoes = questoes.length;
 
-        console.log("📊 ===== FINALIZAÇÃO DO QUIZ =====");
-        console.log("📊 Respostas finais:", respostasFinais);
-        console.log("📊 Respostas certas finais:", certasFinais);
-        console.log("📊 Total de acertos:", totalCorretas, "de", totalQuestoes);
-
         try {
             await AsyncStorage.setItem("respostasQuiz", JSON.stringify(respostasFinais));
             await AsyncStorage.setItem("respostasCertas", JSON.stringify(certasFinais));
@@ -166,12 +169,11 @@ export default function QuestionsPage() {
 
             navigation.navigate("Resultados");
         } catch (error) {
-            console.error("Erro ao salvar respostas:", error);
+            console.error("Erro ao salvar resultados:", error);
             Alert.alert("Erro", "Não foi possível salvar suas respostas.");
         }
     };
 
-    // 🔹 Estados visuais
     if (loading) {
         return (
             <View style={styles.centered}>
@@ -222,7 +224,6 @@ export default function QuestionsPage() {
 
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: "#DBEAFE" },
-
     quizCard: {
         backgroundColor: "#fff",
         marginHorizontal: 20,
@@ -234,14 +235,12 @@ const styles = StyleSheet.create({
         shadowRadius: 10,
         elevation: 5,
     },
-
     title: {
         fontSize: 20,
         fontWeight: "bold",
         marginBottom: 20,
         color: "#1E3A8A",
     },
-
     option: {
         backgroundColor: "#E0E7FF",
         padding: 14,
@@ -250,12 +249,10 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: "#C7D2FE",
     },
-
     optionText: {
         fontSize: 16,
         color: "#1E40AF",
     },
-
     timer: {
         fontSize: 18,
         color: "#DC2626",
@@ -263,21 +260,18 @@ const styles = StyleSheet.create({
         textAlign: "center",
         marginBottom: 20,
     },
-
     footer: {
         textAlign: "center",
         marginTop: 20,
         color: "#475569",
         fontWeight: "500",
     },
-
     centered: {
         flex: 1,
         justifyContent: "center",
         alignItems: "center",
         backgroundColor: "#DBEAFE",
     },
-
     waitText: {
         fontSize: 18,
         color: "#1E3A8A",

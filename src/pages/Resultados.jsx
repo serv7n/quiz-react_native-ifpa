@@ -6,11 +6,13 @@ import {
     StyleSheet,
     ActivityIndicator,
     ScrollView,
+    Alert,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native";
-import { CheckCircle, XCircle, Trophy, Home } from "lucide-react-native";
+import { CheckCircle, XCircle, Trophy, Table } from "lucide-react-native";
 import Nav from "../components/Nav";
+import Api from "../services/Api"; // ✅ Import da sua classe de API
 
 export default function ResultadosPage() {
     const [loading, setLoading] = useState(true);
@@ -26,12 +28,13 @@ export default function ResultadosPage() {
 
     const carregarResultados = async () => {
         try {
-            const [totalCorretasStr, totalQuestoesStr, respostasStr, certasStr] = await Promise.all([
-                AsyncStorage.getItem("totalCorretas"),
-                AsyncStorage.getItem("totalQuestoes"),
-                AsyncStorage.getItem("respostasQuiz"),
-                AsyncStorage.getItem("respostasCertas"),
-            ]);
+            const [totalCorretasStr, totalQuestoesStr, respostasStr, certasStr] =
+                await Promise.all([
+                    AsyncStorage.getItem("totalCorretas"),
+                    AsyncStorage.getItem("totalQuestoes"),
+                    AsyncStorage.getItem("respostasQuiz"),
+                    AsyncStorage.getItem("respostasCertas"),
+                ]);
 
             setTotalCorretas(parseInt(totalCorretasStr) || 0);
             setTotalQuestoes(parseInt(totalQuestoesStr) || 0);
@@ -57,18 +60,46 @@ export default function ResultadosPage() {
         return { text: "Continue praticando! 💪", color: "#EF4444" };
     };
 
-    const voltarParaInicio = async () => {
-        // Limpa os dados do quiz
-        await AsyncStorage.multiRemove([
-            "respostasQuiz",
-            "respostasCertas",
-            "totalCorretas",
-            "totalQuestoes",
-        ]);
-        navigation.reset({
-            index: 0,
-            routes: [{ name: "TurmasSelection" }],
-        });
+    const irParaTabela = async () => {
+        try {
+            // 🔹 Obtém o usuário armazenado no AsyncStorage
+            const userStr = await AsyncStorage.getItem("user");
+            if (!userStr) {
+                Alert.alert("Erro", "Usuário não encontrado no armazenamento.");
+                return;
+            }
+
+            const user = JSON.parse(userStr);
+            const idAluno = user.id;
+
+            // 🔹 Calcula a pontuação final
+            const pontuacaoFinal = totalCorretas * 100;
+
+            // 🔹 Envia a pontuação ao backend
+            const resposta = await Api.atualizarPontuacao(idAluno, pontuacaoFinal);
+
+            if (resposta.status_code === 200) {
+                console.log("✅ Pontuação salva:", resposta.data);
+            } else {
+                console.warn("⚠️ Erro ao salvar pontuação:", resposta.messege);
+            }
+
+            // 🔹 Limpa dados locais e vai para a tabela
+            await AsyncStorage.multiRemove([
+                "respostasQuiz",
+                "respostasCertas",
+                "totalCorretas",
+                "totalQuestoes",
+            ]);
+
+            navigation.reset({
+                index: 0,
+                routes: [{ name: "Ranking" }], // ✅ Nome da tela de tabela
+            });
+        } catch (error) {
+            console.error("Erro ao enviar pontuação:", error);
+            Alert.alert("Erro", "Não foi possível enviar a pontuação ao servidor.");
+        }
     };
 
     if (loading) {
@@ -138,13 +169,10 @@ export default function ResultadosPage() {
                     </View>
                 </View>
 
-                {/* Botão de Voltar */}
-                <TouchableOpacity
-                    style={styles.button}
-                    onPress={voltarParaInicio}
-                >
-                    <Home size={24} color="#fff" />
-                    <Text style={styles.buttonText}>  Voltar ao Início</Text>
+                {/* 🔹 Novo botão: Ir para Tabela */}
+                <TouchableOpacity style={styles.button} onPress={irParaTabela}>
+                    <Table size={24} color="#fff" />
+                    <Text style={styles.buttonText}>  Ir para Tabela</Text>
                 </TouchableOpacity>
             </ScrollView>
         </View>

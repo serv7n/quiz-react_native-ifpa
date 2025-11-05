@@ -86,6 +86,64 @@ class Api {
         return data;
            
     }
+    async atualizarPontuacao(id, valor) {
+        try {
+            // Envia no formato que o Laravel espera
+            const dados = {
+                pontuacao: valor,
+            };
+
+            const response = await this.client.put(`/aluno/${id}/pontuacao`, dados);
+
+            // Retorno padronizado
+            return {
+                status_code: response.data?.status_code ?? 200,
+                messege: response.data?.messege ?? "Pontuação atualizada com sucesso",
+                data: response.data?.data ?? null,
+            };
+        } catch (error) {
+            console.error(
+                "Erro ao atualizar pontuação do aluno:",
+                error.response?.data || error.message
+            );
+
+            return {
+                status_code: error.response?.status ?? 500,
+                messege:
+                    error.response?.data?.messege ??
+                    "Erro ao atualizar pontuação do aluno",
+                data: null,
+            };
+        }
+    }
+
+    async getRankingPorAluno(alunoId) {
+        try {
+            const response = await this.client.post("/alunos/ranking", {
+                aluno_id: alunoId,
+            });
+
+            // Garante retorno padronizado
+            return {
+                status_code: response.data?.status_code ?? 200,
+                messege: response.data?.messege ?? "success",
+                data: response.data?.data ?? null,
+            };
+        } catch (error) {
+            console.error(
+                "Erro ao buscar ranking do aluno:",
+                error.response?.data || error.message
+            );
+
+            return {
+                status_code: error.response?.status ?? 500,
+                messege:
+                    error.response?.data?.messege ?? "Erro ao buscar ranking do aluno",
+                data: null,
+            };
+        }
+    }
+
 
 }
 
