@@ -11,7 +11,7 @@ import {
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Api from "../services/Api";
 import Nav from "../components/Nav";
-
+import Maca from "../components/Maca";
 export default function TurmasSelection({ navigation }) {
     const [turmas, setTurmas] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -145,19 +145,20 @@ export default function TurmasSelection({ navigation }) {
     }
 
     return (
+        <>
         <View style={styles.container}>
             <Nav />
             <Text style={styles.header}>Selecione uma Turma ({turmas.length})</Text>
             <ScrollView contentContainerStyle={styles.scrollContainer}>
                 {turmas.map((turma) => (
                     <TouchableOpacity
-                        key={turma.id}
-                        style={[
-                            styles.turmaCard,
-                            turmaSelecionada === turma.id && styles.turmaSelecionada,
-                        ]}
-                        onPress={() => setTurmaSelecionada(turma.id)}
-                        disabled={mostrandoFeedback}
+                    key={turma.id}
+                    style={[
+                        styles.turmaCard,
+                        turmaSelecionada === turma.id && styles.turmaSelecionada,
+                    ]}
+                    onPress={() => setTurmaSelecionada(turma.id)}
+                    disabled={mostrandoFeedback}
                     >
                         <Text style={styles.turmaNome}>{turma.nome}</Text>
                         <Text style={styles.turmaProf}>👨‍🏫 {turma.professores}</Text>
@@ -166,120 +167,153 @@ export default function TurmasSelection({ navigation }) {
 
                 {turmaSelecionada && (
                     <TouchableOpacity
-                        style={styles.botaoConfirmar}
-                        onPress={confirmarInscricao}
-                        disabled={mostrandoFeedback}
+                    style={styles.botaoConfirmar}
+                    onPress={confirmarInscricao}
+                    disabled={mostrandoFeedback}
                     >
                         <Text style={styles.textoBotao}>Confirmar Inscrição</Text>
                     </TouchableOpacity>
                 )}
             </ScrollView>
+                <Maca texto="Confirme no final da página"/>
         </View>
+</>
     );
 }
 
-// 🎨 Estilos
+// 🎨 Estilos padronizados
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: "#DBEAFE",
+        backgroundColor: "#e6e6e6ff", // Igual à Home
         paddingBottom: 20,
     },
+    
     center: {
         flex: 1,
-        alignItems: "center",
         justifyContent: "center",
+        alignItems: "center",
     },
+    
     loadingText: {
         marginTop: 10,
-        color: "#1E3A8A",
+        color: "#333",
         fontWeight: "bold",
     },
+
     header: {
-        fontSize: 22,
+        fontSize: 24,
         fontWeight: "bold",
-        color: "#1E3A8A",
+        color: "#333",
         textAlign: "center",
         marginVertical: 20,
     },
+
     scrollContainer: {
-        paddingHorizontal: 16,
+        paddingHorizontal: 20,
+        paddingBottom: 40,
     },
+
     turmaCard: {
         backgroundColor: "#fff",
-        borderRadius: 14,
-        padding: 16,
-        marginBottom: 12,
+        borderRadius: 20,
+        padding: 18,
+        marginBottom: 14,
+        shadowColor: "#000",
+        shadowOpacity: 0.06,
+        shadowRadius: 10,
         elevation: 3,
     },
+
     turmaSelecionada: {
         borderWidth: 2,
-        borderColor: "#2563EB",
+        borderColor: "#F4C20D", // amarelo igual ao botão da Home
     },
+
     turmaNome: {
-        fontSize: 18,
+        fontSize: 20,
         fontWeight: "bold",
-        color: "#1E3A8A",
+        color: "#333",
     },
+
     turmaProf: {
         fontSize: 14,
-        color: "#475569",
+        color: "#666",
         marginTop: 4,
     },
+
     botaoConfirmar: {
-        backgroundColor: "#2563EB",
+        backgroundColor: "#F4C20D", // mesmo botão da Home
         paddingVertical: 14,
         borderRadius: 12,
         alignItems: "center",
         marginTop: 20,
+        elevation: 2,
     },
+
     textoBotao: {
         color: "#fff",
         fontWeight: "bold",
         fontSize: 16,
     },
+
+    // Tela de confirmação
     confirmContainer: {
         flex: 1,
         alignItems: "center",
         justifyContent: "center",
     },
+
     successEmoji: {
         fontSize: 60,
         marginBottom: 10,
     },
+
     successTitle: {
         fontSize: 26,
         fontWeight: "bold",
-        color: "#1E3A8A",
+        color: "#333",
+        marginBottom: 6,
     },
+
     successSubtitle: {
-        color: "#1E40AF",
+        color: "#666",
+        fontSize: 16,
         marginBottom: 20,
     },
+
     infoBox: {
-        backgroundColor: "#EFF6FF",
+        backgroundColor: "#F3F4F6",
         padding: 16,
-        borderRadius: 12,
+        borderRadius: 16,
         width: "80%",
         marginBottom: 30,
     },
+
     label: {
         fontWeight: "bold",
-        color: "#1E3A8A",
+        color: "#333",
+        fontSize: 16,
+        marginBottom: 4,
     },
+
     infoText: {
-        color: "#334155",
+        color: "#666",
+        fontSize: 15,
     },
+
     confirmButton: {
-        backgroundColor: "#22C55E",
+        backgroundColor: "#F4C20D",
         paddingVertical: 14,
         borderRadius: 12,
         width: "80%",
         alignItems: "center",
+        elevation: 2,
     },
+
     confirmButtonText: {
         color: "#fff",
         fontWeight: "bold",
-        fontSize: 16,
+        fontSize: 18,
     },
 });

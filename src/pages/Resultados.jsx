@@ -12,7 +12,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native";
 import { CheckCircle, XCircle, Trophy, Table } from "lucide-react-native";
 import Nav from "../components/Nav";
-import Api from "../services/Api"; // ✅ Import da sua classe de API
+import Api from "../services/Api";
 
 export default function ResultadosPage() {
     const [loading, setLoading] = useState(true);
@@ -54,15 +54,23 @@ export default function ResultadosPage() {
 
     const obterMensagem = () => {
         const porcentagem = calcularPorcentagem();
-        if (porcentagem >= 90) return { text: "Excelente! 🎉", color: "#10B981" };
-        if (porcentagem >= 70) return { text: "Muito Bom! 👏", color: "#3B82F6" };
-        if (porcentagem >= 50) return { text: "Bom trabalho! 👍", color: "#F59E0B" };
-        return { text: "Continue praticando! 💪", color: "#EF4444" };
+
+        // Todas as mensagens agora usam #F4C20D
+        return {
+            text:
+                porcentagem >= 90
+                    ? "Excelente! 🎉"
+                    : porcentagem >= 70
+                        ? "Muito Bom! 👏"
+                        : porcentagem >= 50
+                            ? "Bom trabalho! 👍"
+                            : "Continue praticando! 💪",
+            color: "#F4C20D",
+        };
     };
 
     const irParaTabela = async () => {
         try {
-            // 🔹 Obtém o usuário armazenado no AsyncStorage
             const userStr = await AsyncStorage.getItem("user");
             if (!userStr) {
                 Alert.alert("Erro", "Usuário não encontrado no armazenamento.");
@@ -72,19 +80,16 @@ export default function ResultadosPage() {
             const user = JSON.parse(userStr);
             const idAluno = user.id;
 
-            // 🔹 Calcula a pontuação final
             const pontuacaoFinal = totalCorretas * 100;
 
-            // 🔹 Envia a pontuação ao backend
             const resposta = await Api.atualizarPontuacao(idAluno, pontuacaoFinal);
 
             if (resposta.status_code === 200) {
-                console.log("✅ Pontuação salva:", resposta.data);
+                console.log("Pontuação salva:", resposta.data);
             } else {
-                console.warn("⚠️ Erro ao salvar pontuação:", resposta.messege);
+                console.warn("Erro ao salvar pontuação:", resposta.messege);
             }
 
-            // 🔹 Limpa dados locais e vai para a tabela
             await AsyncStorage.multiRemove([
                 "respostasQuiz",
                 "respostasCertas",
@@ -94,7 +99,7 @@ export default function ResultadosPage() {
 
             navigation.reset({
                 index: 0,
-                routes: [{ name: "Ranking" }], // ✅ Nome da tela de tabela
+                routes: [{ name: "Ranking" }],
             });
         } catch (error) {
             console.error("Erro ao enviar pontuação:", error);
@@ -105,7 +110,7 @@ export default function ResultadosPage() {
     if (loading) {
         return (
             <View style={styles.centered}>
-                <ActivityIndicator size="large" color="#1E3A8A" />
+                <ActivityIndicator size="large" color="#F4C20D" />
             </View>
         );
     }
@@ -118,9 +123,8 @@ export default function ResultadosPage() {
             <Nav />
 
             <ScrollView contentContainerStyle={styles.scrollContent}>
-                {/* Card de Resultado Principal */}
                 <View style={styles.resultCard}>
-                    <Trophy size={80} color="#F59E0B" style={{ alignSelf: "center" }} />
+                    <Trophy size={80} color="#F4C20D" style={{ alignSelf: "center" }} />
 
                     <Text style={styles.title}>Quiz Finalizado!</Text>
 
@@ -128,7 +132,6 @@ export default function ResultadosPage() {
                         {mensagem.text}
                     </Text>
 
-                    {/* Pontuação */}
                     <View style={styles.scoreContainer}>
                         <Text style={styles.scoreText}>
                             {totalCorretas} / {totalQuestoes}
@@ -136,30 +139,24 @@ export default function ResultadosPage() {
                         <Text style={styles.scoreLabel}>Acertos</Text>
                     </View>
 
-                    {/* Porcentagem */}
                     <View style={styles.percentageContainer}>
                         <View style={styles.percentageBar}>
                             <View
                                 style={[
                                     styles.percentageFill,
-                                    {
-                                        width: `${porcentagem}%`,
-                                        backgroundColor: mensagem.color,
-                                    },
+                                    { width: `${porcentagem}%`, backgroundColor: mensagem.color },
                                 ]}
                             />
                         </View>
                         <Text style={styles.percentageText}>{porcentagem}%</Text>
                     </View>
 
-                    {/* Detalhes */}
                     <View style={styles.detailsContainer}>
                         <View style={styles.detailItem}>
                             <CheckCircle size={24} color="#10B981" />
-                            <Text style={styles.detailText}>
-                                Corretas: {totalCorretas}
-                            </Text>
+                            <Text style={styles.detailText}>Corretas: {totalCorretas}</Text>
                         </View>
+
                         <View style={styles.detailItem}>
                             <XCircle size={24} color="#EF4444" />
                             <Text style={styles.detailText}>
@@ -169,7 +166,6 @@ export default function ResultadosPage() {
                     </View>
                 </View>
 
-                {/* 🔹 Novo botão: Ir para Tabela */}
                 <TouchableOpacity style={styles.button} onPress={irParaTabela}>
                     <Table size={24} color="#fff" />
                     <Text style={styles.buttonText}>  Ir para Tabela</Text>
@@ -182,7 +178,7 @@ export default function ResultadosPage() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: "#DBEAFE",
+        backgroundColor: "#e9e9e9ff", // amarelo bem suave para não agredir visual
     },
 
     scrollContent: {
@@ -194,7 +190,7 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: "center",
         alignItems: "center",
-        backgroundColor: "#DBEAFE",
+        backgroundColor: "#FFF7D1",
     },
 
     resultCard: {
@@ -212,7 +208,7 @@ const styles = StyleSheet.create({
         fontSize: 28,
         fontWeight: "bold",
         textAlign: "center",
-        color: "#1E3A8A",
+        color: "#F4C20D",
         marginTop: 20,
         marginBottom: 10,
     },
@@ -232,7 +228,7 @@ const styles = StyleSheet.create({
     scoreText: {
         fontSize: 48,
         fontWeight: "bold",
-        color: "#1E3A8A",
+        color: "#F4C20D",
     },
 
     scoreLabel: {
@@ -262,7 +258,7 @@ const styles = StyleSheet.create({
         fontSize: 24,
         fontWeight: "bold",
         textAlign: "center",
-        color: "#1E3A8A",
+        color: "#F4C20D",
     },
 
     detailsContainer: {
@@ -286,7 +282,7 @@ const styles = StyleSheet.create({
     },
 
     button: {
-        backgroundColor: "#2563EB",
+        backgroundColor: "#F4C20D",
         paddingVertical: 16,
         paddingHorizontal: 24,
         borderRadius: 12,

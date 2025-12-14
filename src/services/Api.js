@@ -3,7 +3,7 @@ import axios from "axios";
 class Api {
     constructor() {
         this.client = axios.create({
-            baseURL: "http://192.168.1.4:8000/api", // ✅ ajustado conforme pedido
+            baseURL: "https://app-quiz-laravel-2.squareweb.app/api", // ✅ ajustado conforme pedido
             headers: {
                 "Content-Type": "application/json",
                 Accept: "application/json",

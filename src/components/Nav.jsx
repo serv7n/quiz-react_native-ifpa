@@ -1,12 +1,12 @@
 import React, { useState } from "react";
-import { View, Text, TouchableOpacity, Modal, StyleSheet, Alert } from "react-native";
+import { View, Text, TouchableOpacity, Modal, StyleSheet, Alert, Image } from "react-native";
 import { LogOut, Menu, X } from "lucide-react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native";
 
 export default function Nav() {
     const [menuAberto, setMenuAberto] = useState(false);
-    const navigation = useNavigation(); // 🔹 garante que navigation funcione
+    const navigation = useNavigation();
 
     async function handleLogout() {
         Alert.alert(
@@ -19,9 +19,9 @@ export default function Nav() {
                     style: "destructive",
                     onPress: async () => {
                         try {
-                            await AsyncStorage.removeItem("user"); // remove usuário
-                            setMenuAberto(false); // fecha menu
-                            navigation.reset({ index: 0, routes: [{ name: "Home" }] }); // volta para Home
+                            await AsyncStorage.removeItem("user");
+                            setMenuAberto(false);
+                            navigation.reset({ index: 0, routes: [{ name: "Home" }] });
                         } catch (error) {
                             console.error("Erro ao fazer logout:", error);
                             Alert.alert("Erro ao sair. Tente novamente.");
@@ -40,13 +40,13 @@ export default function Nav() {
                     <Menu size={24} color="#fff" />
                 </TouchableOpacity>
 
+                {/* Imagem no lugar do texto */}
                 <View style={styles.titleContainer}>
-                    <View style={styles.logoBox}>
-                        <Text style={styles.logoText}>Q</Text>
-                    </View>
-                    <Text style={styles.title}>
-                        Quiz<Text style={styles.titleHighlight}>App</Text>
-                    </Text>
+                    <Image
+                        source={require("../../assets/nav.png")} // ajuste o caminho
+                        style={styles.navImage}
+                        resizeMode="contain"
+                    />
                 </View>
 
                 <View style={{ width: 40 }} />
@@ -65,7 +65,6 @@ export default function Nav() {
                     </View>
 
                     <View style={styles.sidebarContent}>
-                        {/* Apenas botão Logout */}
                         <TouchableOpacity
                             style={[styles.sidebarButton, { backgroundColor: "#FEE2E2" }]}
                             onPress={handleLogout}
@@ -84,10 +83,9 @@ export default function Nav() {
     );
 }
 
-// estilos permanecem iguais
 const styles = StyleSheet.create({
     nav: {
-        backgroundColor: "#1E3A8A",
+        backgroundColor: "#246d38ff",
         flexDirection: "row",
         alignItems: "center",
         justifyContent: "space-between",
@@ -101,22 +99,13 @@ const styles = StyleSheet.create({
         position: "absolute",
         left: "50%",
         transform: [{ translateX: -60 }],
-        flexDirection: "row",
-        alignItems: "center",
-        gap: 8,
-    },
-    logoBox: {
-        backgroundColor: "#3B82F6",
-        width: 36,
-        height: 36,
-        borderRadius: 8,
         alignItems: "center",
         justifyContent: "center",
-        marginRight: 6,
     },
-    logoText: { color: "#fff", fontWeight: "bold", fontSize: 18 },
-    title: { color: "#fff", fontSize: 20, fontWeight: "bold" },
-    titleHighlight: { color: "#60A5FA" },
+    navImage: {
+        width: 120,
+        height: 40,
+    },
     overlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.5)" },
     sidebar: {
         position: "absolute",
@@ -125,13 +114,10 @@ const styles = StyleSheet.create({
         width: 280,
         height: "100%",
         backgroundColor: "#fff",
-        shadowColor: "#000",
-        shadowOpacity: 0.2,
-        shadowRadius: 10,
         elevation: 10,
     },
     sidebarHeader: {
-        backgroundColor: "#1E3A8A",
+        backgroundColor: "#34A853",
         flexDirection: "row",
         justifyContent: "space-between",
         alignItems: "center",
@@ -143,20 +129,20 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         alignItems: "center",
         gap: 8,
-        backgroundColor: "#EFF6FF",
         paddingVertical: 12,
         paddingHorizontal: 10,
         borderRadius: 10,
+        backgroundColor: "#E6F4EA",
     },
-    sidebarText: { fontSize: 16, fontWeight: "600", color: "#2563EB" },
+    sidebarText: { fontSize: 16, fontWeight: "600", color: "#34A853" },
     sidebarFooter: {
         position: "absolute",
         bottom: 0,
         width: "100%",
-        borderTopWidth: 1,
-        borderColor: "#E5E7EB",
         padding: 16,
         backgroundColor: "#F9FAFB",
+        borderTopWidth: 1,
+        borderColor: "#E5E7EB",
     },
     footerText: { textAlign: "center", color: "#6B7280", fontSize: 13 },
 });

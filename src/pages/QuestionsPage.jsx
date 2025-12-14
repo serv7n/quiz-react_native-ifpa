@@ -225,7 +225,7 @@ export default function QuestionsPage() {
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: "#DBEAFE" },
     quizCard: {
-        backgroundColor: "#fff",
+        backgroundColor: "#f3f3f3ff",
         marginHorizontal: 20,
         marginVertical: 30,
         padding: 20,
